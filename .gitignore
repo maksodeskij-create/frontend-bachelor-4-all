@@ -1,0 +1,3 @@
+# Ignoriere den Node.js Abhängigkeiten-Ordner
+node_modules/
+
