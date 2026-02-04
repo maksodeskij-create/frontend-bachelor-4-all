@@ -1,41 +1,5 @@
-:root {
-    --transition-speed: 0.3s;
-}
-
-/* DARK MODE */
-body.dark-mode {
-    --bg-color: #121212;
-    --sidebar-bg: #1e1e1e;
-    --topbar-bg: rgba(30, 30, 30, 0.8);
-    --card-bg: #252525;
-    --text-main: #ffffff;
-    --text-muted: #a0a0a0;
-    --accent: #646cff;
-    --border: rgba(255, 255, 255, 0.1);
-}
-
-/* LIGHT MODE */
-body.light-mode {
-    --bg-color: #f8f9fa;
-    --sidebar-bg: #ffffff;
-    --topbar-bg: rgba(255, 255, 255, 0.8);
-    --card-bg: #ffffff;
-    --text-main: #1a1a1a;
-    --text-muted: #666666;
-    --accent: #4f46e5;
-    --border: rgba(0, 0, 0, 0.08);
-}
-
-body {
+body, html {
     margin: 0;
     padding: 0;
-    font-family: 'Inter', system-ui, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    transition: background-color var(--transition-speed);
-    overflow-x: hidden;
-}
-
-* {
-    box-sizing: border-box;
+    transition: background-color 0.3s ease; /* Zusätzliche Sicherheit für den Übergang */
 }

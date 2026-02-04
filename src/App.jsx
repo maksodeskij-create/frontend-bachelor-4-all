@@ -1,12 +1,29 @@
 import React from 'react';
-import Dashboard from './components/Dashboard.jsx'; // Pfad anpassen, falls nötig
-import './index.css'; // Für allgemeine Stile, falls vorhanden
+import './index.css';
+
+import AdminDashboard from "./components/AdminDashboard.jsx";
+import Dashboard from './components/Dashboard.jsx';
+import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
+
+const darkTheme = createTheme({
+    palette: {
+        mode: 'dark', // oder 'light'
+        primary: {
+            main: '#646cff',
+        },
+        background: {
+            default: '#121212',
+            paper: '#1e1e1e',
+        },
+    },
+});
 
 function App() {
     return (
-        <div className="app-container">
-            <Dashboard />
-        </div>
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline /> {/* Das hier löscht alle restlichen Browser-Standard-Styles */}
+            <Dashboard/>
+        </ThemeProvider>
     );
 }
 

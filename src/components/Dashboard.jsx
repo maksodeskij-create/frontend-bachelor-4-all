@@ -1,91 +1,189 @@
-import React, { useState, useEffect } from 'react';
-import './Dashboard.css';
+import React, { useState, useMemo } from 'react';
+import {
+    Box, AppBar, Toolbar, Typography, IconButton, Container, Grid,
+    Card, CardContent, Avatar, Divider, Button, createTheme,
+    ThemeProvider, CssBaseline, Tooltip
+} from '@mui/material';
+import { DarkMode, LightMode, Download, School, Email, LocationOn } from '@mui/icons-material';
 
 function Dashboard() {
-    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+    const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
+
+    // Theme-Konfiguration (identisch zum Admin für Konsistenz)
+    const theme = useMemo(() => createTheme({
+        palette: {
+            mode,
+            primary: { main: '#646cff' },
+            background: {
+                default: mode === 'dark' ? '#121212' : '#f8f9fa',
+                paper: mode === 'dark' ? '#1e1e1e' : '#ffffff',
+            },
+        },
+        components: {
+            MuiCssBaseline: {
+                styleOverrides: {
+                    body: { transition: 'background-color 0.3s ease, color 0.3s ease' },
+                },
+            },
+        },
+    }), [mode]);
+
+    const toggleTheme = () => {
+        const newMode = mode === 'dark' ? 'light' : 'dark';
+        setMode(newMode);
+        localStorage.setItem('theme', newMode);
+    };
 
     const [user] = useState({
         name: "Max Mustermann",
-        email: "max.mustermann@example.com",
-        adresse: "Musterstraße 42, 12345 Berlin",
-        herkunft: "Deutschland",
-        beruf: "Fullstack Entwickler"
+        beruf: "Fullstack Entwickler",
+        email: "max@beispiel.de",
+        ort: "Berlin, Deutschland"
     });
 
     const [zertifikate] = useState([
-        { id: 1, titel: "React Professional", aussteller: "Udemy", datum: "2023-10-12", url: "#" },
-        { id: 2, titel: "AWS Practitioner", aussteller: "Amazon", datum: "2024-01-05", url: "#" },
-        { id: 3, titel: "UI/UX Design", aussteller: "Coursera", datum: "2023-05-20", url: "#" }
+        { id: 1, titel: "React Professional", aussteller: "Udemy", datum: "2023", url: "#" },
+        { id: 2, titel: "AWS Cloud Practitioner", aussteller: "Amazon", datum: "2024", url: "#" },
+        { id: 3, titel: "UI/UX Advanced", aussteller: "Coursera", datum: "2023", url: "#" },
     ]);
 
-    useEffect(() => {
-        document.body.className = theme + "-mode";
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-
     return (
-        <div className="dashboard-wrapper">
-            {/* TOPBAR */}
-            <nav className="topbar">
-                <div className="topbar-brand">Bachelor4All</div>
-                <div className="theme-toggle" onClick={toggleTheme}>
-                    {theme === 'dark' ? (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb700" strokeWidth="2">
-                            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                        </svg>
-                    ) : (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                        </svg>
-                    )}
-                </div>
-            </nav>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
-            <div className="dashboard-content-layout">
-                {/* SIDEBAR LINKS */}
-                <aside className="user-sidebar">
-                    <div className="avatar-large">{user.name.charAt(0)}</div>
-                    <h2 className="user-name">{user.name}</h2>
-                    <p className="user-job">{user.beruf}</p>
-                    <div className="user-info-stack">
-                        <div className="info-box">
-                            <label>Email</label>
-                            <p>{user.email}</p>
-                        </div>
-                        <div className="info-box">
-                            <label>Wohnort</label>
-                            <p>{user.adresse}</p>
-                        </div>
-                    </div>
-                </aside>
+                {/* TOPBAR */}
+                <AppBar position="sticky" elevation={0} sx={{
+                    bgcolor: 'background.paper',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    color: 'text.primary'
+                }}>
+                    <Toolbar>
+                        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 800, letterSpacing: 1 }}>
+                            <span style={{ color: '#646cff' }}>Bachelor4All</span>
+                        </Typography>
+                        <IconButton onClick={toggleTheme} color="inherit">
+                            {mode === 'dark' ? <LightMode sx={{color: '#ffb700'}} /> : <DarkMode sx={{color: '#4f46e5'}} />}
+                        </IconButton>
+                    </Toolbar>
+                </AppBar>
 
-                {/* MAIN RECHTS */}
-                <main className="cert-main">
-                    <h1>Zertifikats-Übersicht</h1>
-                    <div className="cert-grid">
-                        {zertifikate.map(cert => (
-                            <div key={cert.id} className="cert-card">
-                                <div className="cert-icon">📜</div>
-                                <div className="cert-details">
-                                    <h3>{cert.titel}</h3>
-                                    <p>{cert.aussteller}</p>
-                                    <small>{new Date(cert.datum).getFullYear()}</small>
-                                </div>
-                                <a href={cert.url} download className="download-btn">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                        <polyline points="7 10 12 15 17 10" />
-                                        <line x1="12" y1="15" x2="12" y2="3" />
-                                    </svg>
-                                </a>
-                            </div>
-                        ))}
-                    </div>
-                </main>
-            </div>
-        </div>
+                <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+                    <Grid container spacing={4}>
+
+                        {/* LINKE SEITE: Personendaten (Schmale Spalte) */}
+                        <Grid item xs={12} md={3}>
+                            <Box sx={{
+                                position: { md: 'sticky' },
+                                top: 100, // Bleibt beim Scrollen oben kleben
+                            }}>
+                                <Card elevation={0} sx={{
+                                    p: 3,
+                                    borderRadius: 4,
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    textAlign: 'center',
+                                    bgcolor: 'background.paper'
+                                }}>
+                                    <Avatar sx={{
+                                        width: 80, height: 80, mx: 'auto', mb: 2,
+                                        bgcolor: 'primary.main', fontSize: '2rem'
+                                    }}>
+                                        {user.name.charAt(0)}
+                                    </Avatar>
+
+                                    <Typography variant="h6" fontWeight="bold">{user.name}</Typography>
+                                    <Typography color="primary" variant="caption" sx={{ display: 'block', mb: 2, fontWeight: 600, textTransform: 'uppercase' }}>
+                                        {user.beruf}
+                                    </Typography>
+
+                                    <Divider sx={{ my: 2 }} />
+
+                                    <Box sx={{ textAlign: 'left' }}>
+                                        <Typography variant="caption" color="text.secondary">KONTAKT</Typography>
+                                        <Typography variant="body2" sx={{ mb: 2, mt: 0.5, fontWeight: 500 }}>{user.email}</Typography>
+
+                                        <Typography variant="caption" color="text.secondary">STANDORT</Typography>
+                                        <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 500 }}>{user.ort}</Typography>
+                                    </Box>
+                                </Card>
+                            </Box>
+                        </Grid>
+
+                        {/* RECHTE SEITE: Zertifikate (Restlicher Space) */}
+                        <Grid item xs={12} md={9}>
+                            <Box sx={{ mb: 3, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                                <Typography variant="h4" fontWeight="900" sx={{ letterSpacing: -0.5 }}>
+                                    Zertifikate
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                    {zertifikate.length} Einträge gefunden
+                                </Typography>
+                            </Box>
+
+                            <Grid container spacing={2}>
+                                {zertifikate.map((cert) => (
+                                    <Grid item xs={12} key={cert.id}>
+                                        <Card elevation={0} sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            p: 2.5,
+                                            borderRadius: 3,
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                            transition: 'all 0.2s ease-in-out',
+                                            '&:hover': {
+                                                borderColor: 'primary.main',
+                                                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                                                transform: 'translateX(4px)' // Kleiner Slide-Effekt nach rechts
+                                            }
+                                        }}>
+                                            <Box sx={{
+                                                bgcolor: 'primary.main',
+                                                color: 'white',
+                                                p: 1.5,
+                                                borderRadius: 2,
+                                                mr: 3,
+                                                display: 'flex',
+                                                boxShadow: '0 4px 12px rgba(100, 108, 255, 0.3)'
+                                            }}>
+                                                <School />
+                                            </Box>
+
+                                            <Box sx={{ flexGrow: 1 }}>
+                                                <Typography variant="h6" sx={{ fontSize: '1.1rem', lineHeight: 1.2, fontWeight: 700 }}>
+                                                    {cert.titel}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                                    {cert.aussteller} • <span style={{ opacity: 0.7 }}>{cert.datum}</span>
+                                                </Typography>
+                                            </Box>
+
+                                            <Tooltip title="Herunterladen">
+                                                <IconButton
+                                                    component="a"
+                                                    href={cert.url}
+                                                    download
+                                                    sx={{
+                                                        border: '1px solid',
+                                                        borderColor: 'divider',
+                                                        '&:hover': { bgcolor: 'primary.main', color: 'white', borderColor: 'primary.main' }
+                                                    }}
+                                                >
+                                                    <Download />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Card>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Grid>
+
+                    </Grid>
+                </Container>
+            </Box>
+        </ThemeProvider>
     );
 }
 
