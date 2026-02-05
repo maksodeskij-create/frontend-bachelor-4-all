@@ -4,18 +4,19 @@ import {
     ListItemIcon, ListItemText, Divider, Container, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Paper, Button,
     Chip, Avatar, createTheme, ThemeProvider, CssBaseline, Dialog,
-    DialogTitle, DialogContent, DialogActions, TextField, Stack
+    DialogTitle, DialogContent, DialogActions, TextField, Stack,
+    FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import {
     DarkMode, LightMode, Delete, Add, UploadFile, PictureAsPdf,
-    Dashboard as DashboardIcon, People, Description, Settings, Email
+    People, Description
 } from '@mui/icons-material';
 
 const drawerWidth = 260;
 
 function AdminDashboard() {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
-    const [activeTab, setActiveTab] = useState('Zertifikate'); // Steuert den Screen
+    const [activeTab, setActiveTab] = useState('Zertifikate');
     const [open, setOpen] = useState(false);
 
     // Daten-States
@@ -35,19 +36,35 @@ function AdminDashboard() {
         palette: {
             mode,
             primary: { main: '#646cff' },
-            background: { default: mode === 'dark' ? '#0f0f0f' : '#f4f6f8', paper: mode === 'dark' ? '#1a1a1a' : '#ffffff' }
+            background: {
+                default: mode === 'dark' ? '#0f0f0f' : '#f4f6f8',
+                paper: mode === 'dark' ? '#1a1a1a' : '#ffffff'
+            }
         },
+        shape: { borderRadius: 12 }
     }), [mode]);
 
     // Handlers
     const handleSave = (e) => {
         e.preventDefault();
         if (activeTab === 'Zertifikate') {
-            setZertifikate([...zertifikate, { id: Date.now(), ...certForm, fileName: certForm.pdfFile?.name }]);
+            setZertifikate([...zertifikate, {
+                id: Date.now(),
+                ...certForm,
+                fileName: certForm.pdfFile ? certForm.pdfFile.name : 'Keine Datei'
+            }]);
+            setCertForm({ titel: '', user: '', pdfFile: null });
         } else {
             setUsers([...users, { id: Date.now(), ...userForm }]);
+            setUserForm({ name: '', email: '', rolle: 'User' });
         }
         setOpen(false);
+    };
+
+    const toggleTheme = () => {
+        const newMode = mode === 'dark' ? 'light' : 'dark';
+        setMode(newMode);
+        localStorage.setItem('theme', newMode);
     };
 
     return (
@@ -59,7 +76,7 @@ function AdminDashboard() {
                 <AppBar position="fixed" elevation={0} sx={{ zIndex: (t) => t.zIndex.drawer + 1, bgcolor: 'background.paper', color: 'text.primary', borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Toolbar>
                         <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>ADMIN<span style={{ color: '#646cff' }}>PORTAL</span></Typography>
-                        <IconButton onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')} color="inherit">
+                        <IconButton onClick={toggleTheme} color="inherit">
                             {mode === 'dark' ? <LightMode sx={{color: '#ffb700'}} /> : <DarkMode sx={{color: '#4f46e5'}} />}
                         </IconButton>
                     </Toolbar>
@@ -89,7 +106,7 @@ function AdminDashboard() {
                                 }}
                             >
                                 <ListItemIcon sx={{ color: activeTab === item.text ? 'primary.main' : 'inherit' }}>{item.icon}</ListItemIcon>
-                                <ListItemText primary={item.text} />
+                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: activeTab === item.text ? 700 : 400 }} />
                             </ListItem>
                         ))}
                     </List>
@@ -122,12 +139,17 @@ function AdminDashboard() {
                                     {(activeTab === 'Zertifikate' ? zertifikate : users).map((row) => (
                                         <TableRow key={row.id} hover>
                                             {activeTab === 'Zertifikate' ? (
-                                                <><TableCell sx={{ fontWeight: 500 }}>{row.titel}</TableCell><TableCell>{row.user}</TableCell><TableCell><Chip label={row.fileName} size="small" icon={<PictureAsPdf />} /></TableCell></>
+                                                <><TableCell sx={{ fontWeight: 500 }}>{row.titel}</TableCell><TableCell>{row.user}</TableCell><TableCell><Chip label={row.fileName} size="small" icon={<PictureAsPdf />} variant="outlined" /></TableCell></>
                                             ) : (
-                                                <><TableCell sx={{ fontWeight: 500 }}>{row.name}</TableCell><TableCell>{row.email}</TableCell><TableCell><Chip label={row.rolle} size="small" color="primary" variant="outlined" /></TableCell></>
+                                                <><TableCell sx={{ fontWeight: 500 }}>{row.name}</TableCell><TableCell>{row.email}</TableCell><TableCell><Chip label={row.rolle} size="small" color={row.rolle === 'Admin' ? 'error' : row.rolle === 'Arbeitgeber' ? 'secondary' : 'primary'} variant="outlined" /></TableCell></>
                                             )}
                                             <TableCell align="right">
-                                                <IconButton color="error" size="small"><Delete /></IconButton>
+                                                <IconButton color="error" size="small" onClick={() => {
+                                                    if(activeTab === 'Zertifikate') setZertifikate(zertifikate.filter(c => c.id !== row.id));
+                                                    else setUsers(users.filter(u => u.id !== row.id));
+                                                }}>
+                                                    <Delete />
+                                                </IconButton>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -147,7 +169,7 @@ function AdminDashboard() {
                                     <>
                                         <TextField label="Titel" fullWidth required onChange={(e) => setCertForm({...certForm, titel: e.target.value})} />
                                         <TextField label="Empfänger" fullWidth required onChange={(e) => setCertForm({...certForm, user: e.target.value})} />
-                                        <Button variant="outlined" component="label" startIcon={<UploadFile />} sx={{ borderStyle: 'dashed' }}>
+                                        <Button variant="outlined" component="label" startIcon={<UploadFile />} sx={{ borderStyle: 'dashed', py: 1.5 }}>
                                             {certForm.pdfFile ? certForm.pdfFile.name : "PDF auswählen"}
                                             <input type="file" hidden accept="application/pdf" onChange={(e) => setCertForm({...certForm, pdfFile: e.target.files[0]})} />
                                         </Button>
@@ -156,12 +178,24 @@ function AdminDashboard() {
                                     <>
                                         <TextField label="Vollständiger Name" fullWidth required onChange={(e) => setUserForm({...userForm, name: e.target.value})} />
                                         <TextField label="Email Adresse" type="email" fullWidth required onChange={(e) => setUserForm({...userForm, email: e.target.value})} />
+                                        <FormControl fullWidth>
+                                            <InputLabel>Rolle</InputLabel>
+                                            <Select
+                                                value={userForm.rolle}
+                                                label="Rolle"
+                                                onChange={(e) => setUserForm({...userForm, rolle: e.target.value})}
+                                            >
+                                                <MenuItem value="Admin">Admin</MenuItem>
+                                                <MenuItem value="User">User</MenuItem>
+                                                <MenuItem value="Arbeitgeber">Arbeitgeber</MenuItem>
+                                            </Select>
+                                        </FormControl>
                                     </>
                                 )}
                             </Stack>
                         </DialogContent>
                         <DialogActions sx={{ p: 3 }}>
-                            <Button onClick={() => setOpen(false)}>Abbrechen</Button>
+                            <Button onClick={() => setOpen(false)} color="inherit">Abbrechen</Button>
                             <Button type="submit" variant="contained" disableElevation>Speichern</Button>
                         </DialogActions>
                     </form>
