@@ -5,7 +5,7 @@ import {
     TableCell, TableContainer, TableHead, TableRow, Paper, Button,
     Chip, Avatar, createTheme, ThemeProvider, CssBaseline, Dialog,
     DialogTitle, DialogContent, DialogActions, TextField, Stack,
-    FormControl, InputLabel, Select, MenuItem
+    FormControl, InputLabel, Select, MenuItem, Autocomplete, createFilterOptions
 } from '@mui/material';
 import {
     DarkMode, LightMode, Delete, Add, UploadFile, PictureAsPdf,
@@ -26,8 +26,11 @@ function AdminDashboard() {
     const [users, setUsers] = useState([
         { id: 1, name: "Max Mustermann", email: "max@beispiel.de", rolle: "User" },
         { id: 2, name: "Erika Muster", email: "erika@web.de", rolle: "Admin" },
+        { id: 3, name: "Tech Corp GmbH", email: "hr@techcorp.de", rolle: "Arbeitgeber" },
     ]);
-
+    const filterOptions = createFilterOptions({
+        limit: 5, // Hier setzen wir das Limit auf 5
+    });
     // Formular-States
     const [certForm, setCertForm] = useState({ titel: '', user: '', pdfFile: null });
     const [userForm, setUserForm] = useState({ name: '', email: '', rolle: 'User' });
@@ -123,7 +126,7 @@ function AdminDashboard() {
                             </Button>
                         </Box>
 
-                        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                             <Table>
                                 <TableHead sx={{ bgcolor: 'action.hover' }}>
                                     <TableRow>
@@ -167,8 +170,35 @@ function AdminDashboard() {
                             <Stack spacing={3} sx={{ mt: 1 }}>
                                 {activeTab === 'Zertifikate' ? (
                                     <>
-                                        <TextField label="Titel" fullWidth required onChange={(e) => setCertForm({...certForm, titel: e.target.value})} />
-                                        <TextField label="Empfänger" fullWidth required onChange={(e) => setCertForm({...certForm, user: e.target.value})} />
+                                        <TextField
+                                            label="Zertifikats-Titel"
+                                            fullWidth
+                                            required
+                                            value={certForm.titel}
+                                            onChange={(e) => setCertForm({...certForm, titel: e.target.value})}
+                                        />
+
+                                        {/* AUTOCOMPLETE FÜR NUTZER-SUCHE */}
+                                        <Autocomplete
+                                            options={users}
+                                            filterOptions={filterOptions} // Die Limit-Funktion anwenden
+                                            getOptionLabel={(option) => option.name}
+                                            onChange={(event, newValue) => {
+                                                setCertForm({...certForm, user: newValue ? newValue.name : ''});
+                                            }}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="Empfänger suchen"
+                                                    placeholder="Tippe zum Suchen..."
+                                                    required
+                                                    fullWidth
+                                                />
+                                            )}
+                                            // Optional: Damit man sieht, dass es mehr geben könnte, wenn man tippt
+                                            noOptionsText="Kein Nutzer gefunden"
+                                        />
+
                                         <Button variant="outlined" component="label" startIcon={<UploadFile />} sx={{ borderStyle: 'dashed', py: 1.5 }}>
                                             {certForm.pdfFile ? certForm.pdfFile.name : "PDF auswählen"}
                                             <input type="file" hidden accept="application/pdf" onChange={(e) => setCertForm({...certForm, pdfFile: e.target.files[0]})} />
