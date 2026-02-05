@@ -22,7 +22,7 @@ function App() {
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline /> {/* Das hier löscht alle restlichen Browser-Standard-Styles */}
-            <Dashboard/>
+            <AdminDashboard/>
         </ThemeProvider>
     );
 }
