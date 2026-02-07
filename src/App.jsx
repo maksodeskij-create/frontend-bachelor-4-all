@@ -4,6 +4,7 @@ import './index.css';
 import AdminDashboard from "./components/AdminDashboard.jsx";
 import Dashboard from './components/Dashboard.jsx';
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
+import EmployerDashboard from "./components/EmployerDashboard.jsx";
 
 const darkTheme = createTheme({
     palette: {
@@ -22,7 +23,7 @@ function App() {
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline /> {/* Das hier löscht alle restlichen Browser-Standard-Styles */}
-            <AdminDashboard/>
+            <EmployerDashboard/>
         </ThemeProvider>
     );
 }
