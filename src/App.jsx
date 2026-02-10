@@ -1,6 +1,6 @@
 import React from 'react';
 import './index.css';
-
+import Login from "./components/Login.jsx"
 import AdminDashboard from "./components/AdminDashboard.jsx";
 import Dashboard from './components/Dashboard.jsx';
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
@@ -23,7 +23,7 @@ function App() {
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline /> {/* Das hier löscht alle restlichen Browser-Standard-Styles */}
-            <EmployerDashboard/>
+            <Login/>
         </ThemeProvider>
     );
 }
