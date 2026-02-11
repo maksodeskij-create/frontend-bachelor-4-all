@@ -1,26 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import {
     Box, AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem,
-    ListItemIcon, ListItemText, Divider, Container, Grid, Table, TableBody,
-    TableCell, TableContainer, TableHead, TableRow, Paper, Button,
-    Chip, Avatar, createTheme, ThemeProvider, CssBaseline, TextField, InputAdornment
+    ListItemIcon, ListItemText, Divider, Container, Paper, Button,
+    Chip, Avatar, createTheme, ThemeProvider, CssBaseline, Stack,
+    CircularProgress, Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Grid
 } from '@mui/material';
 import {
-    DarkMode, LightMode, Search, VerifiedUser, Business,
-    Group, History, FileDownload
+    DarkMode, LightMode, Business, VerifiedUser, Group,
+    History, UploadFile, CheckCircle, ErrorOutline, DeleteSweep,
+    Search, AccountCircle
 } from '@mui/icons-material';
 
 const drawerWidth = 260;
 
 function EmployerDashboard() {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
-    const [activeTab, setActiveTab] = useState('Verifizierung');
-
-    // Beispieldaten für den Arbeitgeber
-    const [verifizierteZerts] = useState([
-        { id: 1, student: "Max Mustermann", titel: "React Professional", code: "CERT-8821", status: "Gültig" },
-        { id: 2, student: "Erika Muster", titel: "Cloud Architect", code: "CERT-1092", status: "Gültig" },
-    ]);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [result, setResult] = useState(null);
+    const [history, setHistory] = useState([]);
 
     const theme = useMemo(() => createTheme({
         palette: {
@@ -34,6 +32,45 @@ function EmployerDashboard() {
         shape: { borderRadius: 12 }
     }), [mode]);
 
+    const handleVerifyUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsVerifying(true);
+        setResult(null);
+
+        setTimeout(() => {
+            const isSampleValid = !file.name.toLowerCase().includes('fake');
+
+            if (isSampleValid) {
+                const mockData = {
+                    status: 'valid',
+                    studentName: "Max Mustermann",
+                    course: "Fullstack Web Development",
+                    issueDate: "10.02.2026"
+                };
+                setResult(mockData);
+                setHistory([{
+                    id: Date.now(),
+                    fileName: file.name,
+                    student: mockData.studentName,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    status: 'valid'
+                }, ...history]);
+            } else {
+                setResult({ status: 'invalid' });
+                setHistory([{
+                    id: Date.now(),
+                    fileName: file.name,
+                    student: "Unbekannt",
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    status: 'invalid'
+                }, ...history]);
+            }
+            setIsVerifying(false);
+        }, 2000);
+    };
+
     const toggleTheme = () => {
         const newMode = mode === 'dark' ? 'light' : 'dark';
         setMode(newMode);
@@ -45,115 +82,132 @@ function EmployerDashboard() {
             <CssBaseline />
             <Box sx={{ display: 'flex' }}>
 
-                {/* TOPBAR */}
                 <AppBar position="fixed" elevation={0} sx={{ zIndex: (t) => t.zIndex.drawer + 1, bgcolor: 'background.paper', color: 'text.primary', borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Toolbar>
-                        <Business sx={{ mr: 2, color: 'primary.main' }} />
-                        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}><span style={{ color: '#646cff' }}>Bachelor4All</span></Typography>
+                        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 800 }}><span style={{ color: '#646cff' }}>Bachelor4All</span></Typography>
                         <IconButton onClick={toggleTheme} color="inherit">
                             {mode === 'dark' ? <LightMode sx={{color: '#ffb700'}} /> : <DarkMode sx={{color: '#4f46e5'}} />}
                         </IconButton>
                     </Toolbar>
                 </AppBar>
 
-                {/* SIDEBAR */}
                 <Drawer variant="permanent" sx={{ width: drawerWidth, flexShrink: 0, [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' } }}>
                     <Toolbar />
                     <Box sx={{ p: 3, textAlign: 'center' }}>
-                        <Avatar sx={{ width: 54, height: 54, mx: 'auto', mb: 1, bgcolor: 'secondary.main' }} variant="rounded">
+                        <Avatar sx={{ width: 54, height: 54, mx: 'auto', mb: 1, bgcolor: '#646cff' }} variant="rounded">
                             <Business />
                         </Avatar>
-                        <Typography variant="subtitle2" fontWeight="bold">Tech Corp GmbH</Typography>
-                        <Typography variant="caption" color="text.secondary">Premium Partner</Typography>
+                        <Typography variant="subtitle2" fontWeight="bold">Employer Panel</Typography>
                     </Box>
                     <Divider sx={{ mx: 2, mb: 2 }} />
                     <List sx={{ px: 2 }}>
-                        {[
-                            { text: 'Verifizierung', icon: <VerifiedUser /> }
-                        ].map((item) => (
-                            <ListItem
-                                button
-                                key={item.text}
-                                onClick={() => setActiveTab(item.text)}
-                                sx={{
-                                    borderRadius: 2, mb: 1,
-                                    bgcolor: activeTab === item.text ? 'rgba(100, 108, 255, 0.1)' : 'transparent',
-                                    color: activeTab === item.text ? 'primary.main' : 'inherit'
-                                }}
-                            >
-                                <ListItemIcon sx={{ color: activeTab === item.text ? 'primary.main' : 'inherit' }}>{item.icon}</ListItemIcon>
-                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: activeTab === item.text ? 700 : 400 }} />
-                            </ListItem>
-                        ))}
+                        <ListItem button sx={{ borderRadius: 2, bgcolor: 'rgba(100, 108, 255, 0.1)', color: '#646cff', mb: 1 }}>
+                            <ListItemIcon sx={{ color: '#646cff' }}><VerifiedUser /></ListItemIcon>
+                            <ListItemText primary="Echtheits-Check" />
+                        </ListItem>
                     </List>
                 </Drawer>
 
-                {/* CONTENT */}
-                <Box component="main" sx={{ flexGrow: 1, p: 4, width: `calc(100% - ${drawerWidth}px)` }}>
+                <Box component="main" sx={{ flexGrow: 1, p: 4, minHeight: '100vh' }}>
                     <Toolbar />
-                    <Container maxWidth="xl">
-                        <Box sx={{ mb: 4 }}>
-                            <Typography variant="h4" fontWeight="900">Zertifikats-Check</Typography>
-                            <Typography variant="body1" color="text.secondary">Validieren Sie die Echtheit von Qualifikationen per Zertifikats-ID.</Typography>
+                    <Container maxWidth="md">
+
+                        <Box sx={{ textAlign: 'center', mb: 5 }}>
+                            <Typography variant="h4" fontWeight="900">Zertifikat prüfen</Typography>
+                            <Typography variant="body1" color="text.secondary">Laden Sie ein Dokument hoch, um die Blockchain-Signatur zu validieren.</Typography>
                         </Box>
 
-                        {/* SEARCH BAR SECTION */}
-                        <Paper elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', mb: 4, bgcolor: 'background.paper' }}>
-                            <Grid container spacing={2} alignItems="center">
-                                <Grid item xs={12} md={8}>
-                                    <TextField
-                                        fullWidth
-                                        placeholder="Zertifikats-ID eingeben"
-                                        InputProps={{
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <Search color="primary" />
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <Button variant="contained" fullWidth size="large" disableElevation sx={{ height: 56 }}>
-                                        Jetzt Prüfen
+                        <Paper variant="outlined" sx={{ p: 6, mb: 6, textAlign: 'center', borderStyle: 'dashed', borderWidth: 2, bgcolor: 'background.paper' }}>
+                            {!isVerifying && !result && (
+                                <Stack spacing={2} alignItems="center">
+                                    <Search sx={{ fontSize: 60, color: 'text.disabled' }} />
+                                    <Typography variant="h6">PDF zur Prüfung hochladen</Typography>
+                                    <Button variant="contained" component="label" disableElevation sx={{ bgcolor: '#646cff' }}>
+                                        Datei auswählen
+                                        <input type="file" hidden accept="application/pdf" onChange={handleVerifyUpload} />
                                     </Button>
-                                </Grid>
-                            </Grid>
+                                </Stack>
+                            )}
+
+                            {isVerifying && (
+                                <Stack spacing={3} alignItems="center">
+                                    <CircularProgress size={50} sx={{ color: '#646cff' }} />
+                                    <Typography>Blockchain-Abgleich läuft...</Typography>
+                                </Stack>
+                            )}
+
+                            {result && (
+                                <Stack spacing={3} alignItems="center">
+                                    {result.status === 'valid' ? (
+                                        <>
+                                            <CheckCircle sx={{ fontSize: 70, color: 'success.main' }} />
+                                            <Typography variant="h5" fontWeight="bold">Gültiges Zertifikat</Typography>
+
+                                            <Paper sx={{ p: 3, width: '100%', maxWidth: 450, textAlign: 'left', bgcolor: 'action.hover', border: '1px solid', borderColor: 'success.main' }}>
+                                                <Stack spacing={1}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                                                        <AccountCircle color="success" />
+                                                        <Typography variant="h6">{result.studentName}</Typography>
+                                                    </Box>
+                                                    <Divider />
+                                                    <Typography variant="body2"><b>Kurs:</b> {result.course}</Typography>
+                                                    <Typography variant="body2"><b>Datum:</b> {result.issueDate}</Typography>
+                                                </Stack>
+                                            </Paper>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ErrorOutline sx={{ fontSize: 70, color: 'error.main' }} />
+                                            <Typography variant="h5" fontWeight="bold">Prüfung fehlgeschlagen</Typography>
+                                            <Typography variant="body2" color="text.secondary">Dokument nicht im Register gefunden.</Typography>
+                                        </>
+                                    )}
+                                    <Button onClick={() => setResult(null)} variant="outlined">Nächster Check</Button>
+                                </Stack>
+                            )}
                         </Paper>
 
-                        {/* RESULT TABLE */}
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Zuletzt geprüft</Typography>
-                        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-                            <Table>
+                        {/* FIX: Tabellen-Header und Body synchronisiert */}
+                        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Letzte Ergebnisse</Typography>
+                        <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1 }}>
+                            <Table size="small">
                                 <TableHead sx={{ bgcolor: 'action.hover' }}>
                                     <TableRow>
-                                        <TableCell><b>Inhaber</b></TableCell>
-                                        <TableCell><b>Zertifikat</b></TableCell>
-                                        <TableCell><b>ID-Code</b></TableCell>
-                                        <TableCell><b>Status</b></TableCell>
-                                        <TableCell align="right"><b>Aktion</b></TableCell>
+                                        <TableCell><b>Zeit</b></TableCell>
+                                        <TableCell><b>Student</b></TableCell>
+                                        <TableCell><b>Datei</b></TableCell>
+                                        <TableCell align="right"><b>Status</b></TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {verifizierteZerts.map((row) => (
-                                        <TableRow key={row.id} hover>
-                                            <TableCell>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                    <Avatar sx={{ width: 24, height: 24, fontSize: '0.7rem' }}>{row.student[0]}</Avatar>
-                                                    {row.student}
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell>{row.titel}</TableCell>
-                                            <TableCell><code>{row.code}</code></TableCell>
-                                            <TableCell><Chip label={row.status} color="success" size="small" variant="filled" /></TableCell>
-                                            <TableCell align="right">
-                                                <Button size="small" startIcon={<FileDownload />}>PDF</Button>
+                                    {history.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.disabled' }}>
+                                                Noch keine Prüfungen durchgeführt.
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    ) : (
+                                        history.map((item) => (
+                                            <TableRow key={item.id} hover>
+                                                <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{item.time}</TableCell>
+                                                <TableCell sx={{ fontWeight: 600 }}>{item.student}</TableCell>
+                                                <TableCell sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {item.fileName}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    <Chip
+                                                        label={item.status === 'valid' ? 'Echt' : 'Ungültig'}
+                                                        color={item.status === 'valid' ? 'success' : 'error'}
+                                                        size="small"
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
                             </Table>
                         </TableContainer>
+
                     </Container>
                 </Box>
             </Box>

@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { DarkMode, LightMode, Download, School, Email, LocationOn } from '@mui/icons-material';
 
-function Dashboard() {
+function UserDashboard() {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
 
     // Theme-Konfiguration (identisch zum Admin für Konsistenz)
@@ -187,4 +187,4 @@ function Dashboard() {
     );
 }
 
-export default Dashboard;
+export default UserDashboard;
