@@ -78,7 +78,7 @@ function AdminDashboard() {
                 {/* TOPBAR */}
                 <AppBar position="fixed" elevation={0} sx={{ zIndex: (t) => t.zIndex.drawer + 1, bgcolor: 'background.paper', color: 'text.primary', borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Toolbar>
-                        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}><span style={{ color: '#646cff' }}>Bachelor4All</span></Typography>
+                        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>Bachelor4All</Typography>
                         <IconButton onClick={toggleTheme} color="inherit">
                             {mode === 'dark' ? <LightMode sx={{color: '#ffb700'}} /> : <DarkMode sx={{color: '#4f46e5'}} />}
                         </IconButton>

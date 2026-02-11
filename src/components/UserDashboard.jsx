@@ -61,7 +61,7 @@ function UserDashboard() {
                 }}>
                     <Toolbar>
                         <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 800, letterSpacing: 1 }}>
-                            <span style={{ color: '#646cff' }}>Bachelor4All</span>
+                            Bachelor4All
                         </Typography>
                         <IconButton onClick={toggleTheme} color="inherit">
                             {mode === 'dark' ? <LightMode sx={{color: '#ffb700'}} /> : <DarkMode sx={{color: '#4f46e5'}} />}
