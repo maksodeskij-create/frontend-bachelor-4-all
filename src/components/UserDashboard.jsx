@@ -71,7 +71,7 @@ export default function UserDashboard() {
                     </Toolbar>
                 </AppBar>
 
-                <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+                <Container maxWidth="xl" sx={{ mt: 4, mb: 4}}>
                     <Grid container spacing={4}>
 
                         <Grid item xs={12} md={3}>
@@ -112,6 +112,8 @@ export default function UserDashboard() {
                             </Box>
                         </Grid>
 
+                        <Container>
+
                         <Grid item xs={12} md={9}>
                             <Box sx={{ mb: 3, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                                 <Typography variant="h4" fontWeight="900" sx={{ letterSpacing: -0.5 }}>
@@ -124,7 +126,10 @@ export default function UserDashboard() {
 
                             <Grid container spacing={2}>
                                 {myDiplomas.map((cert) => (
-                                    <Grid item xs={12} key={cert.id}>
+                                    <Grid
+                                        item
+                                        xs={12}
+                                        key={cert.id}>
                                         <Card elevation={0} sx={{
                                             display: 'flex',
                                             alignItems: 'center',
@@ -163,13 +168,18 @@ export default function UserDashboard() {
                                             <Tooltip title="Herunterladen">
                                                 <IconButton
                                                     component="a"
-                                                    href={cert.url}
-                                                    download
+                                                    href={`http://localhost:8081${cert.pdfPath}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                     sx={{
                                                         border: '1px solid',
                                                         ml: 1,
                                                         borderColor: 'divider',
-                                                        '&:hover': { bgcolor: 'primary.main', color: 'white', borderColor: 'primary.main' }
+                                                        '&:hover': {
+                                                            bgcolor: 'primary.main',
+                                                            color: 'white',
+                                                            borderColor: 'primary.main'
+                                                        }
                                                     }}
                                                 >
                                                     <Download />
@@ -180,6 +190,7 @@ export default function UserDashboard() {
                                 ))}
                             </Grid>
                         </Grid>
+                        </Container>
 
                     </Grid>
                 </Container>
