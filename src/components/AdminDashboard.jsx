@@ -11,6 +11,7 @@ import {
     DarkMode, LightMode, Delete, Add, UploadFile, PictureAsPdf,
     People, Description
 } from '@mui/icons-material';
+import BlockIcon from '@mui/icons-material/Block'
 
 const drawerWidth = 260;
 
@@ -20,7 +21,7 @@ const USER_ROLES = {
     EMPLOYER: "EMPLOYER",
 };
 
-export default function AdminDashboard() {
+export default function AdminDashboard({onLogout}) {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
     const [activeTab, setActiveTab] = useState('Zertifikate');
     const [open, setOpen] = useState(false);
@@ -73,6 +74,20 @@ export default function AdminDashboard() {
         }
 
         return await response.json();
+    }
+
+    async function revokeCertificate(onChainId) {
+        const response = await fetch("http://localhost:8081/diploma/revoke", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({ onChainId }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Revocation failed");
+        }
     }
 
     const fetchCertificates = async () => {
@@ -191,6 +206,14 @@ export default function AdminDashboard() {
                         <IconButton onClick={toggleTheme} color="inherit">
                             {mode === 'dark' ? <LightMode sx={{color: '#ffb700'}} /> : <DarkMode sx={{color: '#4f46e5'}} />}
                         </IconButton>
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={onLogout}
+                            sx={{ ml: 2 }}
+                        >
+                            Logout
+                        </Button>
                     </Toolbar>
                 </AppBar>
 
@@ -251,6 +274,7 @@ export default function AdminDashboard() {
                                     <TableRow>
                                         {activeTab === 'Zertifikate' ? (
                                             <>
+                                                <TableCell><b>Status</b></TableCell>
                                                 <TableCell><b>Ausstellende Institution</b></TableCell>
                                                 <TableCell><b>Empfänger</b></TableCell>
                                                 <TableCell><b>Dokument</b></TableCell>
@@ -267,9 +291,31 @@ export default function AdminDashboard() {
                                 </TableHead>
                                 <TableBody>
                                     {(activeTab === 'Zertifikate' ? certificates : users).map((row) => (
-                                        <TableRow key={row.id} hover>
+                                        <TableRow
+                                            key={row.id}
+                                            hover
+                                            sx={
+                                                activeTab === "Zertifikate" && row.revoked
+                                                    ? {
+                                                        backgroundColor: 'rgba(255, 0, 0, 0.08)',
+                                                        '&:hover': {
+                                                            backgroundColor: 'rgba(255, 0, 0, 0.12)'
+                                                        }
+                                                    }
+                                                    : {}
+                                            }
+                                        >
                                             {activeTab === 'Zertifikate' ? (
                                                 <>
+                                                    <TableCell sx={{ fontWeight: 500 }}>
+                                                        {row.revoked && (
+                                                            <Chip
+                                                                label="Widerrufen"
+                                                                size="small"
+                                                                color="error"
+                                                            />
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell sx={{ fontWeight: 500 }}>{row.institution}</TableCell>
                                                     <TableCell>{row.studentName}</TableCell>
                                                     <TableCell>
@@ -300,15 +346,37 @@ export default function AdminDashboard() {
                                                 </>
                                             )}
                                             <TableCell align="right">
-                                                <IconButton color="error" size="small" onClick={() => {
-                                                    if (activeTab === 'Zertifikate') {
-                                                        setCertificates(certificates.filter(c => c.id !== row.id));
-                                                    } else {
-                                                        deleteUser(row.email)
-                                                        setUsers(users.filter(u => u.id !== row.id));
-                                                    }}}>
-                                                    <Delete />
-                                                </IconButton>
+                                                {activeTab === 'Zertifikate' ? (
+                                                    <>
+                                                        <IconButton
+                                                            color="error"
+                                                            size="small"
+                                                            disabled={row.revoked}
+                                                            onClick={async () => {
+                                                                if (!window.confirm("Really revoke this diploma?")) return;
+
+                                                                try {
+                                                                    console.log(row.revoked)
+                                                                    await revokeCertificate(row.onChainId);
+                                                                    await fetchCertificates();
+                                                                } catch (err) {
+                                                                    console.error(err);
+                                                                    alert("Revocation failed");
+                                                                }
+                                                            }}                                                   >
+                                                            <BlockIcon />
+                                                        </IconButton>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <IconButton color="error" size="small" onClick={() => {
+                                                            deleteUser(row.email)
+                                                            setUsers(users.filter(u => u.id !== row.id));
+                                                        }}>
+                                                            <Delete />
+                                                        </IconButton>
+                                                    </>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}
