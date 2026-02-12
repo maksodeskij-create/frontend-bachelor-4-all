@@ -25,8 +25,11 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('Zertifikate');
     const [open, setOpen] = useState(false);
 
-    const [zertifikate, setZertifikate] = useState([]);
+    const [certificates, setCertificates] = useState([]);
     const [users, setUsers] = useState([]);
+
+    const [certForm, setCertForm] = useState({ Institution: '', user: '', pdfFile: null });
+    const [userForm, setUserForm] = useState({ name: '', email: '', role: 'Student' });
 
     useEffect(() => {
         fetch("http://localhost:8081/users")
@@ -34,25 +37,38 @@ export default function AdminDashboard() {
             .then(setUsers);
     }, []);
 
-    const fetchCertificates = async () => {
-        try {
-            const res = await fetch("http://localhost:8081/diploma/all");
-            const data = await res.json();
-            setZertifikate(data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
     useEffect(() => {
         if (activeTab === "Zertifikate") {
             fetchCertificates();
         }
     }, [activeTab]);
 
+    async function createUser(name, password, email, role) {
+        const response = await fetch("http://localhost:8081/users", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({ name, password, email, role}),
+        });
 
-    const [certForm, setCertForm] = useState({ Institution: '', user: '', pdfFile: null });
-    const [userForm, setUserForm] = useState({ name: '', email: '', role: 'Student' });
+        if (!response.ok) {
+            throw new Error("User creation failed");
+        }
+
+        return await response.json();
+    }
+
+    const fetchCertificates = async () => {
+        try {
+            const res = await fetch("http://localhost:8081/diploma/all");
+            const data = await res.json();
+            setCertificates(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
 
     const filterOptions = createFilterOptions({
         limit: 5,
@@ -75,22 +91,6 @@ export default function AdminDashboard() {
         setMode(newMode);
         localStorage.setItem('theme', newMode);
     };
-
-    async function createUser(name, password, email, role) {
-        const response = await fetch("http://localhost:8081/users", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({ name, password, email, role}),
-        });
-
-        if (!response.ok) {
-            throw new Error("User creation failed");
-        }
-
-        return await response.json();
-    }
 
     const handleCreateUser = async () => {
         const createdUser = await createUser(
@@ -153,9 +153,19 @@ export default function AdminDashboard() {
             <CssBaseline />
             <Box sx={{ display: 'flex' }}>
 
-                <AppBar position="fixed" elevation={0} sx={{ zIndex: (t) => t.zIndex.drawer + 1, bgcolor: 'background.paper', color: 'text.primary', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <AppBar
+                    position="fixed"
+                    elevation={0}
+                    sx={{ zIndex: (t) => t.zIndex.drawer + 1, bgcolor: 'background.paper', color: 'text.primary', borderBottom: '1px solid', borderColor: 'divider' }}
+                >
                     <Toolbar>
-                        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>ADMIN<span style={{ color: '#646cff' }}>PORTAL</span></Typography>
+                        <Typography
+                            variant="h6"
+                            sx={{ flexGrow: 1, fontWeight: 'bold' }}
+                        >
+                            ADMIN
+                            <span style={{ color: '#646cff' }}>PORTAL</span>
+                        </Typography>
                         <IconButton onClick={toggleTheme} color="inherit">
                             {mode === 'dark' ? <LightMode sx={{color: '#ffb700'}} /> : <DarkMode sx={{color: '#4f46e5'}} />}
                         </IconButton>
@@ -185,7 +195,10 @@ export default function AdminDashboard() {
                                 }}
                             >
                                 <ListItemIcon sx={{ color: activeTab === item.text ? 'primary.main' : 'inherit' }}>{item.icon}</ListItemIcon>
-                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: activeTab === item.text ? 700 : 400 }} />
+                                <ListItemText
+                                    primary={item.text}
+                                    primaryTypographyProps={{ fontWeight: activeTab === item.text ? 700 : 400 }}
+                                />
                             </ListItem>
                         ))}
                     </List>
@@ -196,28 +209,47 @@ export default function AdminDashboard() {
                     <Container maxWidth="xl">
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                             <Typography variant="h4" fontWeight="900">{activeTab} Verwaltung</Typography>
-                            <Button variant="contained" startIcon={<Add />} onClick={() => setOpen(true)} disableElevation>
+                            <Button
+                                variant="contained"
+                                startIcon={<Add />}
+                                onClick={() => setOpen(true)}
+                                disableElevation
+                            >
                                 {activeTab === 'Zertifikate' ? 'Zertifikat erstellen' : 'Benutzer anlegen'}
                             </Button>
                         </Box>
 
-                        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                        <TableContainer
+                            component={Paper}
+                            elevation={0}
+                            sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                        >
                             <Table>
                                 <TableHead sx={{ bgcolor: 'action.hover' }}>
                                     <TableRow>
                                         {activeTab === 'Zertifikate' ? (
-                                            <><TableCell><b>Ausstellende Institution</b></TableCell><TableCell><b>Empfänger</b></TableCell><TableCell><b>Dokument</b></TableCell></>
+                                            <>
+                                                <TableCell><b>Ausstellende Institution</b></TableCell>
+                                                <TableCell><b>Empfänger</b></TableCell>
+                                                <TableCell><b>Dokument</b></TableCell>
+                                            </>
                                         ) : (
-                                            <><TableCell><b>Name</b></TableCell><TableCell><b>Email</b></TableCell><TableCell><b>Rolle</b></TableCell></>
+                                            <>
+                                                <TableCell><b>Name</b></TableCell>
+                                                <TableCell><b>Email</b></TableCell>
+                                                <TableCell><b>Rolle</b></TableCell>
+                                            </>
                                         )}
                                         <TableCell align="right"><b>Aktion</b></TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {(activeTab === 'Zertifikate' ? zertifikate : users).map((row) => (
+                                    {(activeTab === 'Zertifikate' ? certificates : users).map((row) => (
                                         <TableRow key={row.id} hover>
                                             {activeTab === 'Zertifikate' ? (
-                                                <><TableCell sx={{ fontWeight: 500 }}>{row.institution}</TableCell><TableCell>{row.studentName}</TableCell>
+                                                <>
+                                                    <TableCell sx={{ fontWeight: 500 }}>{row.institution}</TableCell>
+                                                    <TableCell>{row.studentName}</TableCell>
                                                     <TableCell>
                                                         <Chip
                                                             label="PDF anzeigen"
@@ -231,11 +263,9 @@ export default function AdminDashboard() {
                                                     </TableCell>
                                                 </>
                                             ) : (
-                                                <><TableCell sx={{ fontWeight: 500 }}>
-                                                    {row.name}
-                                                </TableCell>
-                                                    <TableCell>{row.email}
-                                                    </TableCell>
+                                                <>
+                                                    <TableCell sx={{ fontWeight: 500 }}>{row.name}</TableCell>
+                                                    <TableCell>{row.email}</TableCell>
                                                     <TableCell>
                                                         <Chip
                                                             label={row.role}
@@ -247,9 +277,11 @@ export default function AdminDashboard() {
                                             )}
                                             <TableCell align="right">
                                                 <IconButton color="error" size="small" onClick={() => {
-                                                    if(activeTab === 'Zertifikate') setZertifikate(zertifikate.filter(c => c.id !== row.id));
-                                                    else setUsers(users.filter(u => u.id !== row.id));
-                                                }}>
+                                                    if (activeTab === 'Zertifikate') {
+                                                        setCertificates(certificates.filter(c => c.id !== row.id));
+                                                    } else {
+                                                        setUsers(users.filter(u => u.id !== row.id));
+                                                    }}}>
                                                     <Delete />
                                                 </IconButton>
                                             </TableCell>
@@ -261,11 +293,21 @@ export default function AdminDashboard() {
                     </Container>
                 </Box>
 
-                <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
+                <Dialog
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    fullWidth
+                    maxWidth="xs"
+                >
                     <form onSubmit={handleSubmit}>
-                        <DialogTitle sx={{ fontWeight: 'bold' }}>{activeTab === 'Zertifikate' ? 'Neuer Upload' : 'Neuer Benutzer'}</DialogTitle>
+                        <DialogTitle sx={{ fontWeight: 'bold' }}>
+                            {activeTab === 'Zertifikate' ? 'Neuer Upload' : 'Neuer Benutzer'}
+                        </DialogTitle>
                         <DialogContent>
-                            <Stack spacing={3} sx={{ mt: 1 }}>
+                            <Stack
+                                spacing={3}
+                                sx={{ mt: 1 }}
+                            >
                                 {activeTab === 'Zertifikate' ? (
                                     <>
                                         <TextField
@@ -351,12 +393,22 @@ export default function AdminDashboard() {
                             </Stack>
                         </DialogContent>
                         <DialogActions sx={{ p: 3 }}>
-                            <Button onClick={() => setOpen(false)} color="inherit">Abbrechen</Button>
-                            <Button type="submit" variant="contained" disableElevation>Speichern</Button>
+                            <Button
+                                onClick={() => setOpen(false)}
+                                color="inherit"
+                            >
+                                Abbrechen
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                disableElevation
+                            >
+                                Speichern
+                            </Button>
                         </DialogActions>
                     </form>
                 </Dialog>
-
             </Box>
         </ThemeProvider>
     );

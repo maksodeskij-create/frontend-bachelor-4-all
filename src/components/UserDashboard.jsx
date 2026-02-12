@@ -9,7 +9,13 @@ import { DarkMode, LightMode, Download, School} from '@mui/icons-material';
 export default function UserDashboard() {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
 
-    // Theme-Konfiguration (identisch zum Admin für Konsistenz)
+    useEffect(() => {
+        fetch("http://localhost:8081/diploma/student?name=Max%20Mustermann")
+            .then(res => res.json())
+            .then(setMyDiplomas)
+            .catch(console.error);
+    }, []);
+
     const theme = useMemo(() => createTheme({
         palette: {
             mode,
@@ -42,13 +48,6 @@ export default function UserDashboard() {
     });
 
     const [myDiplomas, setMyDiplomas] = useState([]);
-
-    useEffect(() => {
-        fetch("http://localhost:8081/diploma/student?name=Max%20Mustermann")
-            .then(res => res.json())
-            .then(setMyDiplomas)
-            .catch(console.error);
-    }, []);
 
     return (
         <ThemeProvider theme={theme}>
