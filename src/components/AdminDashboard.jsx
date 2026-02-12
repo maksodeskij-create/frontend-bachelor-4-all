@@ -32,6 +32,9 @@ export default function AdminDashboard({onLogout}) {
     const [certForm, setCertForm] = useState({ Institution: '', user: '', pdfFile: null });
     const [userForm, setUserForm] = useState({ name: '', email: '', role: 'Student' });
 
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [selectedCertificate, setSelectedCertificate] = useState(null);1
+
     useEffect(() => {
         fetch("http://localhost:8081/users")
             .then(res => res.json())
@@ -308,11 +311,17 @@ export default function AdminDashboard({onLogout}) {
                                             {activeTab === 'Zertifikate' ? (
                                                 <>
                                                     <TableCell sx={{ fontWeight: 500 }}>
-                                                        {row.revoked && (
+                                                        {row.revoked ? (
                                                             <Chip
                                                                 label="Widerrufen"
                                                                 size="small"
                                                                 color="error"
+                                                            />
+                                                        ) : (
+                                                            <Chip
+                                                                label="Gültig"
+                                                                size="small"
+                                                                color="success"
                                                             />
                                                         )}
                                                     </TableCell>
@@ -352,20 +361,53 @@ export default function AdminDashboard({onLogout}) {
                                                             color="error"
                                                             size="small"
                                                             disabled={row.revoked}
-                                                            onClick={async () => {
-                                                                if (!window.confirm("Really revoke this diploma?")) return;
-
-                                                                try {
-                                                                    console.log(row.revoked)
-                                                                    await revokeCertificate(row.onChainId);
-                                                                    await fetchCertificates();
-                                                                } catch (err) {
-                                                                    console.error(err);
-                                                                    alert("Revocation failed");
-                                                                }
-                                                            }}                                                   >
+                                                            onClick={() => {
+                                                                setSelectedCertificate(row);
+                                                                setConfirmOpen(true);
+                                                            }}
+                                                        >
                                                             <BlockIcon />
                                                         </IconButton>
+                                                        <Dialog
+                                                            open={confirmOpen}
+                                                            onClose={() => setConfirmOpen(false)}
+                                                        >
+                                                            <DialogTitle>
+                                                                Zertifikat wirklich widerrufen?
+                                                            </DialogTitle>
+                                                            <DialogContent>
+                                                                <Typography>
+                                                                    Dieses Zertifikat wird auf der Blockchain als widerrufen markiert.
+                                                                    Dieser Vorgang kann nicht rückgängig gemacht werden.
+                                                                </Typography>
+                                                            </DialogContent>
+                                                            <DialogActions>
+                                                                <Button
+                                                                    onClick={() => setConfirmOpen(false)}
+                                                                    color="inherit"
+                                                                >
+                                                                    Abbrechen
+                                                                </Button>
+                                                                <Button
+                                                                    color="error"
+                                                                    variant="contained"
+                                                                    onClick={async () => {
+                                                                        try {
+                                                                            await revokeCertificate(selectedCertificate.onChainId);
+                                                                            await fetchCertificates();
+                                                                            setConfirmOpen(false);
+                                                                        } catch (err) {
+                                                                            console.error(err);
+                                                                            alert("Revocation failed");
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    Widerrufen
+                                                                </Button>
+                                                            </DialogActions>
+                                                        </Dialog>
+
+
                                                     </>
                                                 ) : (
                                                     <>
