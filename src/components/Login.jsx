@@ -8,14 +8,35 @@ import {
     Stack
 } from "@mui/material";
 
-export default function Login() {
+export default function Login({onLogin}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("LOGIN:", { email, password });
-        alert("Login clicked (blockchain later)");
+
+        try {
+            const response = await fetch("http://localhost:8081/users/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({ email, password })
+            });
+
+            if (!response.ok) {
+                throw new Error("Login failed");
+            }
+
+            const user = await response.json();
+
+            // user must contain role
+            onLogin(user);
+
+        } catch (err) {
+            alert("Invalid credentials");
+            console.error(err);
+        }
     };
 
     return (

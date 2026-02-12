@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Box, AppBar, Toolbar, Typography, IconButton, Container, Grid,
-    Card, CardContent, Avatar, Divider, Button, createTheme,
+    Card, Avatar, Divider, createTheme,
     ThemeProvider, CssBaseline, Tooltip
 } from '@mui/material';
-import { DarkMode, LightMode, Download, School, Email, LocationOn } from '@mui/icons-material';
+import { DarkMode, LightMode, Download, School} from '@mui/icons-material';
 
-function UserDashboard() {
+export default function UserDashboard() {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
 
     // Theme-Konfiguration (identisch zum Admin für Konsistenz)
@@ -41,11 +41,14 @@ function UserDashboard() {
         ort: "Berlin, Deutschland"
     });
 
-    const [zertifikate] = useState([
-        { id: 1, titel: "React Professional", aussteller: "Udemy", datum: "2023", url: "#" },
-        { id: 2, titel: "AWS Cloud Practitioner", aussteller: "Amazon", datum: "2024", url: "#" },
-        { id: 3, titel: "UI/UX Advanced", aussteller: "Coursera", datum: "2023", url: "#" },
-    ]);
+    const [myDiplomas, setMyDiplomas] = useState([]);
+
+    useEffect(() => {
+        fetch("http://localhost:8081/diploma/student?name=Max%20Mustermann")
+            .then(res => res.json())
+            .then(setMyDiplomas)
+            .catch(console.error);
+    }, []);
 
     return (
         <ThemeProvider theme={theme}>
@@ -72,11 +75,10 @@ function UserDashboard() {
                 <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
                     <Grid container spacing={4}>
 
-                        {/* LINKE SEITE: Personendaten (Schmale Spalte) */}
                         <Grid item xs={12} md={3}>
                             <Box sx={{
                                 position: { md: 'sticky' },
-                                top: 100, // Bleibt beim Scrollen oben kleben
+                                top: 100,
                             }}>
                                 <Card elevation={0} sx={{
                                     p: 3,
@@ -111,19 +113,18 @@ function UserDashboard() {
                             </Box>
                         </Grid>
 
-                        {/* RECHTE SEITE: Zertifikate (Restlicher Space) */}
                         <Grid item xs={12} md={9}>
                             <Box sx={{ mb: 3, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                                 <Typography variant="h4" fontWeight="900" sx={{ letterSpacing: -0.5 }}>
                                     Zertifikate
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                                    {zertifikate.length} Einträge gefunden
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, ml: 2}}>
+                                    {myDiplomas.length} Einträge gefunden
                                 </Typography>
                             </Box>
 
                             <Grid container spacing={2}>
-                                {zertifikate.map((cert) => (
+                                {myDiplomas.map((cert) => (
                                     <Grid item xs={12} key={cert.id}>
                                         <Card elevation={0} sx={{
                                             display: 'flex',
@@ -136,7 +137,7 @@ function UserDashboard() {
                                             '&:hover': {
                                                 borderColor: 'primary.main',
                                                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                                                transform: 'translateX(4px)' // Kleiner Slide-Effekt nach rechts
+                                                transform: 'translateX(4px)'
                                             }
                                         }}>
                                             <Box sx={{
@@ -153,10 +154,10 @@ function UserDashboard() {
 
                                             <Box sx={{ flexGrow: 1 }}>
                                                 <Typography variant="h6" sx={{ fontSize: '1.1rem', lineHeight: 1.2, fontWeight: 700 }}>
-                                                    {cert.titel}
+                                                    {cert.title}
                                                 </Typography>
                                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                                    {cert.aussteller} • <span style={{ opacity: 0.7 }}>{cert.datum}</span>
+                                                    {cert.institution} • <span style={{ opacity: 0.7 }}>{cert.publicationYear}</span>
                                                 </Typography>
                                             </Box>
 
@@ -167,6 +168,7 @@ function UserDashboard() {
                                                     download
                                                     sx={{
                                                         border: '1px solid',
+                                                        ml: 1,
                                                         borderColor: 'divider',
                                                         '&:hover': { bgcolor: 'primary.main', color: 'white', borderColor: 'primary.main' }
                                                     }}
@@ -186,5 +188,3 @@ function UserDashboard() {
         </ThemeProvider>
     );
 }
-
-export default UserDashboard;

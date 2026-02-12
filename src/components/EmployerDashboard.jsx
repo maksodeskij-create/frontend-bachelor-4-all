@@ -4,7 +4,7 @@ import {
     ListItemIcon, ListItemText, Divider, Container, Paper, Button,
     Chip, Avatar, createTheme, ThemeProvider, CssBaseline, Stack,
     CircularProgress, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Grid
+    TableHead, TableRow, TextField
 } from '@mui/material';
 import {
     DarkMode, LightMode, Business, VerifiedUser, Group,
@@ -14,11 +14,12 @@ import {
 
 const drawerWidth = 260;
 
-function EmployerDashboard() {
+export default function EmployerDashboard() {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
     const [isVerifying, setIsVerifying] = useState(false);
     const [result, setResult] = useState(null);
     const [history, setHistory] = useState([]);
+    const [userEmail, setUserEmail] = useState("");
 
     const theme = useMemo(() => createTheme({
         palette: {
@@ -32,44 +33,55 @@ function EmployerDashboard() {
         shape: { borderRadius: 12 }
     }), [mode]);
 
-    const handleVerifyUpload = (e) => {
+    const handleVerifyUpload = async (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file || !userEmail) return;
 
         setIsVerifying(true);
         setResult(null);
 
-        setTimeout(() => {
-            const isSampleValid = !file.name.toLowerCase().includes('fake');
+        try {
+            const formData = new FormData();
+            formData.append("userEmail", userEmail);
+            formData.append("file", file);
 
-            if (isSampleValid) {
-                const mockData = {
-                    status: 'valid',
-                    studentName: "Max Mustermann",
-                    course: "Fullstack Web Development",
-                    issueDate: "10.02.2026"
-                };
-                setResult(mockData);
-                setHistory([{
-                    id: Date.now(),
-                    fileName: file.name,
-                    student: mockData.studentName,
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    status: 'valid'
-                }, ...history]);
-            } else {
-                setResult({ status: 'invalid' });
-                setHistory([{
-                    id: Date.now(),
-                    fileName: file.name,
-                    student: "Unbekannt",
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    status: 'invalid'
-                }, ...history]);
+            const response = await fetch(
+                "http://localhost:8081/diploma/verify",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Verification failed");
             }
-            setIsVerifying(false);
-        }, 2000);
+
+            const isValid = await response.json();
+
+            const verificationResult = {
+                status: isValid ? "valid" : "invalid",
+                studentName: userEmail
+            };
+
+            setResult(verificationResult);
+
+            setHistory(prev => [{
+                id: Date.now(),
+                fileName: file.name,
+                student: userEmail,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: isValid ? 'valid' : 'invalid'
+            }, ...prev]);
+
+        } catch (err) {
+            console.error(err);
+            setResult({ status: "invalid" });
+        }
+
+        setIsVerifying(false);
     };
+
 
     const toggleTheme = () => {
         const newMode = mode === 'dark' ? 'light' : 'dark';
@@ -121,7 +133,16 @@ function EmployerDashboard() {
                             {!isVerifying && !result && (
                                 <Stack spacing={2} alignItems="center">
                                     <Search sx={{ fontSize: 60, color: 'text.disabled' }} />
+
+                                    <TextField
+                                        label="Student Email"
+                                        value={userEmail}
+                                        onChange={(e) => setUserEmail(e.target.value)}
+                                        fullWidth
+                                    />
+
                                     <Typography variant="h6">PDF zur Prüfung hochladen</Typography>
+
                                     <Button variant="contained" component="label" disableElevation sx={{ bgcolor: '#646cff' }}>
                                         Datei auswählen
                                         <input type="file" hidden accept="application/pdf" onChange={handleVerifyUpload} />
@@ -149,9 +170,6 @@ function EmployerDashboard() {
                                                         <AccountCircle color="success" />
                                                         <Typography variant="h6">{result.studentName}</Typography>
                                                     </Box>
-                                                    <Divider />
-                                                    <Typography variant="body2"><b>Kurs:</b> {result.course}</Typography>
-                                                    <Typography variant="body2"><b>Datum:</b> {result.issueDate}</Typography>
                                                 </Stack>
                                             </Paper>
                                         </>
@@ -167,7 +185,6 @@ function EmployerDashboard() {
                             )}
                         </Paper>
 
-                        {/* FIX: Tabellen-Header und Body synchronisiert */}
                         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Letzte Ergebnisse</Typography>
                         <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1 }}>
                             <Table size="small">
@@ -214,5 +231,3 @@ function EmployerDashboard() {
         </ThemeProvider>
     );
 }
-
-export default EmployerDashboard;
