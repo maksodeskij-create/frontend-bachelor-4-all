@@ -59,6 +59,22 @@ export default function AdminDashboard() {
         return await response.json();
     }
 
+    async function deleteUser(email) {
+        const response = await fetch("http://localhost:8081/users/delete", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({email}),
+        });
+
+        if (!response.ok) {
+            throw new Error("User creation failed");
+        }
+
+        return await response.json();
+    }
+
     const fetchCertificates = async () => {
         try {
             const res = await fetch("http://localhost:8081/diploma/all");
@@ -102,6 +118,12 @@ export default function AdminDashboard() {
 
         setUsers((prev) => [...prev, createdUser]);
         setOpen(false);
+    };
+
+    const handleDeleteUser =  async () => {
+        await deleteUser(
+            userForm.email,
+        );
     };
 
     const handleCreateCertificate = async () => {
@@ -280,6 +302,7 @@ export default function AdminDashboard() {
                                                     if (activeTab === 'Zertifikate') {
                                                         setCertificates(certificates.filter(c => c.id !== row.id));
                                                     } else {
+                                                        deleteUser(row.email)
                                                         setUsers(users.filter(u => u.id !== row.id));
                                                     }}}>
                                                     <Delete />
@@ -329,8 +352,8 @@ export default function AdminDashboard() {
                                             onChange={(e) => setCertForm({...certForm, publicationYear: e.target.value})}
                                         />
                                              <Autocomplete
-                                            options={users}
-                                            filterOptions={filterOptions} // Die Limit-Funktion anwenden
+                                            options={users.filter((user) => user.role === USER_ROLES.STUDENT)}
+                                            filterOptions={filterOptions}
                                             getOptionLabel={(option) => option.name}
                                             onChange={(event, newValue) => {
                                                 setCertForm({...certForm, user: newValue ? newValue.name : ''});
