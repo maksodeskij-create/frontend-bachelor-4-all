@@ -14,7 +14,7 @@ import {
 
 const drawerWidth = 260;
 
-export default function EmployerDashboard() {
+export default function EmployerDashboard({onLogout}) {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
     const [isVerifying, setIsVerifying] = useState(false);
     const [result, setResult] = useState(null);
@@ -108,6 +108,14 @@ export default function EmployerDashboard() {
                                 <DarkMode sx={{color: '#4f46e5'}} />
                             }
                         </IconButton>
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={onLogout}
+                            sx={{ ml: 2 }}
+                        >
+                            Logout
+                        </Button>
                     </Toolbar>
                 </AppBar>
 

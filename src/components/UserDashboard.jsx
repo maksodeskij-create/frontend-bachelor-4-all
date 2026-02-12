@@ -2,11 +2,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
     Box, AppBar, Toolbar, Typography, IconButton, Container, Grid,
     Card, Avatar, Divider, createTheme,
-    ThemeProvider, CssBaseline, Tooltip
+    ThemeProvider, CssBaseline, Tooltip, Button
 } from '@mui/material';
 import { DarkMode, LightMode, Download, School} from '@mui/icons-material';
 
-export default function UserDashboard() {
+export default function UserDashboard({onLogout}) {
     const [mode, setMode] = useState(localStorage.getItem('theme') || 'dark');
 
     useEffect(() => {
@@ -68,6 +68,14 @@ export default function UserDashboard() {
                         <IconButton onClick={toggleTheme} color="inherit">
                             {mode === 'dark' ? <LightMode sx={{color: '#ffb700'}} /> : <DarkMode sx={{color: '#4f46e5'}} />}
                         </IconButton>
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={onLogout}
+                            sx={{ ml: 2 }}
+                        >
+                            Logout
+                        </Button>
                     </Toolbar>
                 </AppBar>
 

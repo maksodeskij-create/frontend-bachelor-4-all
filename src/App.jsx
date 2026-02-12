@@ -24,14 +24,13 @@ export default function App() {
     const renderDashboard = () => {
         if (!currentUser) return <Login onLogin={setCurrentUser} />;
 
-        console.log(currentUser);
         switch (currentUser) {
             case "ADMIN":
-                return <AdminDashboard />;
+                return <AdminDashboard onLogout={() => setCurrentUser(null)} />;
             case "STUDENT":
-                return <UserDashboard/>;
+                return <UserDashboard onLogout={() =>setCurrentUser(null)}/>;
             case "EMPLOYER":
-                return <EmployerDashboard />;
+                return <EmployerDashboard onLogout={() =>setCurrentUser(null)}/>;
             default:
                 return <Login onLogin={setCurrentUser} />;
         }
