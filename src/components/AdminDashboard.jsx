@@ -279,6 +279,8 @@ export default function AdminDashboard() {
                                                             icon={<PictureAsPdf />}
                                                             variant="outlined"
                                                             component="a"
+                                                            rel="noopener noreferrer"
+                                                            target="_blank"
                                                             href={`http://localhost:8081${row.pdfPath}`}
                                                             clickable
                                                         />
